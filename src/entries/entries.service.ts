@@ -97,14 +97,26 @@ export class EntriesService {
     const found = original_answer.match(valueExtractionRegex);
 
     return {
-      value: Number(
-        found[0]
-          .replace(',', '')
-          .replace('.', '')
-          .replace(' billion', '000000000')
-          .replace(' million', '000000'),
-      ),
+      value: found
+        ? Number(
+            found[0]
+              .replace(',', '')
+              .replace('.', '')
+              .replace(' billion', '000000000')
+              .replace(' million', '000000'),
+          )
+        : null,
       original_answer,
     };
   };
+
+  async getOne(query: { id: number }): Promise<Entry> {
+    return this.entriesRepository.findOneBy({
+      id: query.id,
+    });
+  }
+
+  async count(): Promise<number> {
+    return this.entriesRepository.count();
+  }
 }
