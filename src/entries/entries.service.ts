@@ -94,18 +94,10 @@ export class EntriesService {
     const original_answer: string = entryValue.data.choices[0].message.content;
     const valueExtractionRegex =
       /(?=\$)*(\d+(?:\.\d{1})*\ (?:billion|million)*|\d{1,3}(?:,\d{3})*)(?=\.)/;
-    const found = original_answer.match(valueExtractionRegex);
+    const extractedAnswer = original_answer.match(valueExtractionRegex);
 
     return {
-      value: found
-        ? Number(
-            found[0]
-              .replace(',', '')
-              .replace('.', '')
-              .replace(' billion', '000000000')
-              .replace(' million', '000000'),
-          )
-        : null,
+      value: extractedAnswer ? this.extractValue(extractedAnswer) : null,
       original_answer,
     };
   };
@@ -118,5 +110,31 @@ export class EntriesService {
 
   async count(): Promise<number> {
     return this.entriesRepository.count();
+  }
+
+  extractValue(extractedAnswer: RegExpMatchArray) {
+    let value: number;
+    if (
+      extractedAnswer.includes('million') ||
+      extractedAnswer.includes('billion')
+    ) {
+      value = Number(
+        extractedAnswer[0]
+          .replace(/\,(?:1|2|3|4|5|6|7|8|9)/g, '')
+          .replace(/\.(?:1|2|3|4|5|6|7|8|9)/g, '')
+          .replace(' billion', '000000000')
+          .replace(' million', '000000'),
+      );
+    } else {
+      value = Number(
+        extractedAnswer[0]
+          .replace(',', '')
+          .replace('.', '')
+          .replace(' billion', '000000000')
+          .replace(' million', '000000'),
+      );
+    }
+
+    return value;
   }
 }
